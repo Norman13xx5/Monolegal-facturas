@@ -1,0 +1,109 @@
+<div class="pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Programación de envíos</h1>
+      <p>Configure si el proceso de recordatorios se ejecuta solo y cada cuánto. Los cambios aplican de inmediato.</p>
+    </div>
+  </div>
+
+  @if (mensaje(); as m) {
+    <div class="aviso" [class]="m.tipo" role="status">
+      <span>{{ m.texto }}</span>
+      <button type="button" class="cerrar" (click)="mensaje.set(null)" aria-label="Cerrar aviso">×</button>
+    </div>
+  }
+
+  <div class="rejilla">
+    <form class="tarjeta formulario" (ngSubmit)="guardar()">
+      <h2>Configuración</h2>
+
+      <div class="campo interruptor-campo">
+        <div>
+          <label for="activo">Envío automático</label>
+          <p class="ayuda">{{ activo() ? 'Activo: el proceso se ejecutará solo.' : 'Inactivo: solo se ejecuta con el botón de la vista Facturas.' }}</p>
+        </div>
+        <label class="interruptor">
+          <input
+            id="activo"
+            type="checkbox"
+            role="switch"
+            name="activo"
+            [ngModel]="activo()"
+            (ngModelChange)="activo.set($event)"
+          >
+          <span class="pista" aria-hidden="true"></span>
+        </label>
+      </div>
+
+      <div class="campo">
+        <label for="cantidad">Ejecutar cada</label>
+        <div class="intervalo">
+          <input
+            id="cantidad"
+            type="number"
+            name="cantidad"
+            min="1"
+            step="1"
+            [ngModel]="cantidad()"
+            (ngModelChange)="cantidad.set($event)"
+            [attr.aria-invalid]="!!errorIntervalo()"
+          >
+          <select name="unidad" [ngModel]="unidad()" (ngModelChange)="unidad.set($event)" aria-label="Unidad">
+            <option value="minutos">minutos</option>
+            <option value="horas">horas</option>
+          </select>
+        </div>
+        @if (errorIntervalo(); as err) {
+          <p class="error-campo">{{ err }}</p>
+        } @else {
+          <p class="ayuda">Entre 1 minuto y 24 horas.</p>
+        }
+      </div>
+
+      <div class="botones">
+        <button type="button" class="btn" (click)="descartar()" [disabled]="!hayCambios() || guardando()">Descartar</button>
+        <button type="submit" class="btn btn-primario" [disabled]="!!errorIntervalo() || !hayCambios() || guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+
+    <section class="tarjeta estado-cron" aria-label="Estado actual">
+      <h2>Estado actual</h2>
+      @if (config(); as c) {
+        <dl>
+          <div>
+            <dt>Envío automático</dt>
+            <dd>
+              <span class="estado" [class]="c.activo ? 'pagada' : 'pendiente'">{{ c.activo ? 'Activo' : 'Inactivo' }}</span>
+              @if (c.enEjecucion) { <span class="suave">· ejecutándose ahora</span> }
+            </dd>
+          </div>
+          <div>
+            <dt>Frecuencia</dt>
+            <dd>Cada {{ describir(c.intervaloMinutos) }}</dd>
+          </div>
+          <div>
+            <dt>Próxima ejecución</dt>
+            <dd>{{ c.activo && c.proximaEjecucion ? (c.proximaEjecucion | date: 'd MMM y, h:mm:ss a') : '—' }}</dd>
+          </div>
+          <div>
+            <dt>Última ejecución automática</dt>
+            <dd>{{ c.ultimaEjecucion ? (c.ultimaEjecucion | date: 'd MMM y, h:mm:ss a') : 'Todavía no se ha ejecutado' }}</dd>
+          </div>
+          <div>
+            <dt>Resultado de la última</dt>
+            <dd>
+              @if (c.ultimoResultado; as r) {
+                {{ r.procesadas }} revisadas · {{ r.enviadas }} enviadas · {{ r.fallidas }} fallidas
+              } @else { — }
+            </dd>
+          </div>
+        </dl>
+        <p class="ayuda">Esta información se actualiza cada 10 segundos.</p>
+      } @else {
+        <p class="suave">Cargando…</p>
+      }
+    </section>
+  </div>
+</div>

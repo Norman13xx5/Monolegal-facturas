@@ -1,0 +1,154 @@
+/* Estilos globales con la identidad de Monolegal (verde #AED831, Roboto). */
+:root {
+  --verde: #aed831;
+  --verde-claro: #f3f9e3;
+  --verde-texto: #4d6510;
+  --verde-sobre: #1f2a05; /* texto legible sobre el verde de marca */
+  --azul: #5677fc;
+  --texto: #2f2f2f;
+  --texto-suave: #6b6b6b;
+  --borde: #e4e6e0;
+  --fondo: #f5f7f2;
+  --superficie: #ffffff;
+  --peligro: #b42318;
+  --peligro-fondo: #feeceb;
+  --radio: 10px;
+  --sombra: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  font-family: Roboto, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--texto);
+  background: var(--fondo);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+h1 { font-size: 1.5rem; font-weight: 900; }
+h2 { font-size: 1.1rem; font-weight: 700; }
+
+a { color: var(--azul); }
+
+.pagina {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.encabezado-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  p { margin: 4px 0 0; color: var(--texto-suave); }
+}
+
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  &:hover:not(:disabled) { border-color: #c8ccc0; background: #fafbf8; }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  &:focus-visible { outline: 3px solid rgba(86, 119, 252, 0.35); outline-offset: 1px; }
+}
+.btn-primario {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--verde-sobre);
+  font-weight: 700;
+  &:hover:not(:disabled) { background: #9cc426; border-color: #9cc426; }
+}
+.btn-peligro {
+  color: var(--peligro);
+  &:hover:not(:disabled) { background: var(--peligro-fondo); border-color: #f5c2bd; }
+}
+
+/* ---------- Formularios ---------- */
+select, input[type='number'] {
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--superficie);
+  color: var(--texto);
+}
+label { font-weight: 500; }
+
+/* ---------- Avisos ---------- */
+.aviso {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid;
+  &.exito { background: var(--verde-claro); border-color: #d6eaa3; color: var(--verde-texto); }
+  &.error { background: var(--peligro-fondo); border-color: #f5c2bd; color: var(--peligro); }
+  &.info { background: #eef1ff; border-color: #cdd6fe; color: #2c3e9e; }
+  .cerrar { margin-left: auto; background: none; border: 0; cursor: pointer; color: inherit; font-size: 1.1rem; }
+}
+
+/* ---------- Etiquetas de estado ---------- */
+.estado {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  &.pendiente { background: #eef1f6; color: #44506a; border-color: #d9dfe9; }
+  &.primerrecordatorio { background: #fff6dd; color: #8a5a00; border-color: #f6dd9c; }
+  &.segundorecordatorio { background: #ffedd9; color: #a4430b; border-color: #f8c99b; }
+  &.desactivado { background: var(--peligro-fondo); color: var(--peligro); border-color: #f5c2bd; }
+  &.pagada { background: var(--verde-claro); color: var(--verde-texto); border-color: #d6eaa3; }
+  &.enviado { background: var(--verde-claro); color: var(--verde-texto); border-color: #d6eaa3; }
+  &.fallido { background: var(--peligro-fondo); color: var(--peligro); border-color: #f5c2bd; }
+}
+
+/* ---------- Tablas ---------- */
+.tabla-contenedor { overflow-x: auto; }
+table.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+  th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-suave); background: #fafbf8; font-weight: 700; white-space: nowrap; }
+  tbody tr:hover { background: #fbfcf9; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .suave { color: var(--texto-suave); font-size: 0.85rem; }
+  .nowrap { white-space: nowrap; }
+}
+
+.vacio { padding: 32px; text-align: center; color: var(--texto-suave); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}

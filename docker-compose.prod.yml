@@ -1,0 +1,54 @@
+# Modo PRODUCCIÓN: imágenes compiladas, sin carpetas montadas.
+# Uso:  docker compose -f docker-compose.prod.yml up --build -d
+name: monolegal-prod
+
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    volumes:
+      - mongo_datos:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_PUERTO_WEB:-8025}:8025"
+
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    environment:
+      PORT: 3000
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/monolegal}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      CORREO_REMITENTE: ${CORREO_REMITENTE:-Monolegal <facturacion@monolegal.test>}
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PUERTO:-4200}:80"
+
+volumes:
+  mongo_datos:

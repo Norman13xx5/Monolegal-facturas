@@ -1,0 +1,14 @@
+.barra-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--borde);
+  h2 { margin-right: auto; }
+}
+.suave { color: var(--texto-suave); font-size: 0.85rem; font-weight: 400; }
+.nowrap { white-space: nowrap; }
+.flecha { margin: 0 6px; color: var(--texto-suave); }
+.no-aplicado { text-decoration: line-through; opacity: 0.6; }
+.detalle { max-width: 280px; }

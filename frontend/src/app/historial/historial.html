@@ -1,0 +1,85 @@
+<div class="pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Historial de envíos</h1>
+      <p>
+        Cada intento de envío queda registrado, también los fallidos.
+        Los correos se pueden ver en el <a [href]="mailpit" target="_blank" rel="noopener">buzón de pruebas ↗</a>.
+      </p>
+    </div>
+    <button type="button" class="btn" (click)="cargar()" [disabled]="cargando()">Actualizar</button>
+  </div>
+
+  @if (error(); as e) {
+    <div class="aviso error" role="alert"><span>{{ e }}</span></div>
+  }
+
+  <section class="tarjeta">
+    <div class="barra-filtros">
+      <h2>
+        Últimos {{ totales().total }} registros
+        <span class="suave">· {{ totales().enviados }} enviados · {{ totales().fallidos }} fallidos</span>
+      </h2>
+      <label>
+        <span class="sr-only">Filtrar por resultado</span>
+        <select [ngModel]="filtroResultado()" (ngModelChange)="filtroResultado.set($event)">
+          <option value="">Todos los resultados</option>
+          <option value="enviado">Enviados</option>
+          <option value="fallido">Fallidos</option>
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Filtrar por origen</span>
+        <select [ngModel]="filtroOrigen()" (ngModelChange)="filtroOrigen.set($event)">
+          <option value="">Manual y automático</option>
+          <option value="manual">Manual</option>
+          <option value="automatico">Automático</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="tabla-contenedor">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Factura</th>
+            <th>Cliente / correo</th>
+            <th>Cambio de estado</th>
+            <th>Resultado</th>
+            <th>Origen</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filtrados(); track r._id) {
+            <tr>
+              <td class="nowrap">{{ r.fecha | date: 'd MMM y, h:mm:ss a' }}</td>
+              <td class="nowrap"><strong>{{ r.numeroFactura }}</strong></td>
+              <td>
+                <div>{{ r.empresa }}</div>
+                <div class="suave">{{ r.correoDestino }}</div>
+              </td>
+              <td class="nowrap">
+                <span class="estado" [class]="r.estadoAnterior">{{ etiqueta(r.estadoAnterior) }}</span>
+                <span class="flecha" aria-label="pasa a">→</span>
+                <span class="estado" [class]="r.estadoNuevo" [class.no-aplicado]="!r.estadoActualizado">{{ etiqueta(r.estadoNuevo) }}</span>
+              </td>
+              <td><span class="estado" [class]="r.resultado">{{ r.resultado === 'enviado' ? 'Enviado' : 'Fallido' }}</span></td>
+              <td>{{ r.origen === 'automatico' ? 'Automático' : 'Manual' }}</td>
+              <td class="suave detalle">
+                {{ r.detalle ?? (r.estadoActualizado ? 'Estado actualizado.' : '—') }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="vacio">
+                {{ cargando() ? 'Cargando historial…' : 'Todavía no hay envíos. Ejecute el proceso desde la vista Facturas.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

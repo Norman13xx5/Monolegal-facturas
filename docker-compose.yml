@@ -1,0 +1,66 @@
+# Modo DESARROLLO: el código de ./backend y ./frontend se monta en los contenedores
+# y se recarga solo al guardar.  Uso:  docker compose up --build
+name: monolegal
+
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    ports:
+      - "${MONGO_PUERTO:-27017}:27017"
+    volumes:
+      - mongo_datos:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Buzón de correo de pruebas: todo lo que envía el backend se ve en http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_PUERTO_WEB:-8025}:8025"
+
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+    environment:
+      PORT: 3000
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/monolegal}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      CORREO_REMITENTE: ${CORREO_REMITENTE:-Monolegal <facturacion@monolegal.test>}
+      # Detecta cambios de archivos montados desde macOS
+      CHOKIDAR_USEPOLLING: "true"
+      TSC_WATCHFILE: DynamicPriorityPolling
+    ports:
+      - "${BACKEND_PUERTO:-3000}:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    restart: unless-stopped
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "${FRONTEND_PUERTO:-4200}:4200"
+
+volumes:
+  mongo_datos:

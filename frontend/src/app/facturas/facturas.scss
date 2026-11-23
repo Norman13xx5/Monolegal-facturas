@@ -1,0 +1,63 @@
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-top: 4px solid #d9dfe9;
+  &.total { border-top-color: var(--verde); }
+  &.borde-primerrecordatorio { border-top-color: #f2c14e; }
+  &.borde-segundorecordatorio { border-top-color: #f08c3a; }
+  &.borde-desactivado { border-top-color: #d64545; }
+  &.borde-pagada { border-top-color: var(--verde); }
+  &:hover { border-color: #c8ccc0; }
+  &.seleccionado { outline: 2px solid var(--verde); outline-offset: -1px; }
+}
+.indicador-titulo { font-size: 0.8rem; color: var(--texto-suave); font-weight: 500; }
+.indicador-numero { font-size: 1.7rem; font-weight: 900; }
+.indicador-valor { font-size: 0.85rem; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+
+.por-empresa {
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  h2 { margin-bottom: 10px; }
+}
+.empresas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.empresa {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--superficie);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  &:hover { background: #fafbf8; }
+  &.seleccionado { border-color: var(--verde); background: var(--verde-claro); }
+}
+.empresa-nombre { font-weight: 700; }
+.suave { color: var(--texto-suave); font-size: 0.85rem; }
+
+.barra-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--borde);
+  h2 { margin-right: auto; }
+}

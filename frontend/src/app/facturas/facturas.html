@@ -1,0 +1,155 @@
+<div class="pagina">
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Facturas</h1>
+      <p>
+        El proceso envía un correo por cada factura en primer o segundo recordatorio y luego avanza su estado.
+        @if (!cargando()) {
+          <strong>Ahora mismo procesaría {{ porProcesar() }} {{ porProcesar() === 1 ? 'factura' : 'facturas' }}.</strong>
+        }
+      </p>
+    </div>
+    <div class="acciones">
+      <button type="button" class="btn" (click)="cargar()" [disabled]="cargando()">Actualizar</button>
+      <button type="button" class="btn btn-peligro" (click)="reiniciar()" [disabled]="reiniciando() || ejecutando()">
+        {{ reiniciando() ? 'Reiniciando…' : 'Reiniciar datos de prueba' }}
+      </button>
+      <button type="button" class="btn btn-primario" (click)="ejecutar()" [disabled]="ejecutando() || reiniciando()">
+        {{ ejecutando() ? 'Enviando correos…' : 'Ejecutar proceso ahora' }}
+      </button>
+    </div>
+  </div>
+
+  @if (aviso(); as a) {
+    <div class="aviso" [class]="a.tipo" role="status">
+      <span>
+        {{ a.texto }}
+        @if (a.conCorreos) {
+          <a [href]="mailpit" target="_blank" rel="noopener">Ver correos en el buzón ↗</a>
+        }
+      </span>
+      <button type="button" class="cerrar" (click)="aviso.set(null)" aria-label="Cerrar aviso">×</button>
+    </div>
+  }
+
+  @if (resumen(); as r) {
+    <section class="resumen" aria-label="Resumen de facturas">
+      <button
+        type="button"
+        class="tarjeta indicador total"
+        [class.seleccionado]="filtroEstado() === ''"
+        (click)="filtroEstado.set('')"
+      >
+        <span class="indicador-titulo">Todas las facturas</span>
+        <span class="indicador-numero">{{ r.total }}</span>
+        <span class="indicador-valor">{{ r.valorTotal | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+      </button>
+      @for (e of estados; track e.valor) {
+        <button
+          type="button"
+          class="tarjeta indicador"
+          [class]="'borde-' + e.valor"
+          [class.seleccionado]="filtroEstado() === e.valor"
+          (click)="filtroEstado.set(filtroEstado() === e.valor ? '' : e.valor)"
+          [attr.aria-pressed]="filtroEstado() === e.valor"
+        >
+          <span class="indicador-titulo">{{ e.etiqueta }}</span>
+          <span class="indicador-numero">{{ r.porEstado[e.valor].cantidad }}</span>
+          <span class="indicador-valor">{{ r.porEstado[e.valor].valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+        </button>
+      }
+    </section>
+
+    <section class="tarjeta por-empresa" aria-label="Resumen por empresa">
+      <h2>Por cliente</h2>
+      <div class="empresas">
+        @for (e of r.porEmpresa; track e.empresa) {
+          <button
+            type="button"
+            class="empresa"
+            [class.seleccionado]="filtroEmpresa() === e.empresa"
+            (click)="filtroEmpresa.set(filtroEmpresa() === e.empresa ? '' : e.empresa)"
+          >
+            <span class="empresa-nombre">{{ e.empresa }}</span>
+            <span class="suave">{{ e.cantidad }} facturas · {{ e.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <section class="tarjeta">
+    <div class="barra-filtros">
+      <h2>Detalle</h2>
+      <label>
+        <span class="sr-only">Filtrar por estado</span>
+        <select [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+          <option value="">Todos los estados</option>
+          @for (e of estados; track e.valor) {
+            <option [value]="e.valor">{{ e.etiqueta }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Filtrar por cliente</span>
+        <select [ngModel]="filtroEmpresa()" (ngModelChange)="filtroEmpresa.set($event)">
+          <option value="">Todos los clientes</option>
+          @for (e of empresas(); track e) {
+            <option [value]="e">{{ e }}</option>
+          }
+        </select>
+      </label>
+      <span class="suave conteo">{{ facturasFiltradas().length }} de {{ facturas().length }}</span>
+    </div>
+
+    <div class="tabla-contenedor">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Factura</th>
+            <th>Concepto</th>
+            <th class="num">Valor</th>
+            <th>Vencimiento</th>
+            <th>Estado</th>
+            <th>Último correo</th>
+            <th>Cambiar estado <span class="suave">(prueba)</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of facturasFiltradas(); track f._id) {
+            <tr>
+              <td>
+                <div>{{ f.empresa?.nombre ?? '(sin empresa)' }}</div>
+                <div class="suave">{{ f.empresa?.correo }}</div>
+              </td>
+              <td class="nowrap"><strong>{{ f.numero }}</strong></td>
+              <td>{{ f.concepto }}</td>
+              <td class="num">{{ f.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</td>
+              <td class="nowrap">{{ f.fechaVencimiento | date: 'd MMM y' }}</td>
+              <td><span class="estado" [class]="f.estado">{{ etiqueta(f.estado) }}</span></td>
+              <td class="suave">{{ f.ultimoEnvio ? (f.ultimoEnvio | date: 'd MMM y, h:mm a') : '—' }}</td>
+              <td>
+                <select
+                  [ngModel]="f.estado"
+                  (ngModelChange)="cambiarEstado(f, $event)"
+                  [attr.aria-label]="'Cambiar estado de ' + f.numero"
+                >
+                  @for (e of estados; track e.valor) {
+                    <option [value]="e.valor">{{ e.etiqueta }}</option>
+                  }
+                </select>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="vacio">
+                {{ cargando() ? 'Cargando facturas…' : 'No hay facturas con estos filtros.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
